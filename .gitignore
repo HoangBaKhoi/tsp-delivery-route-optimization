@@ -1,0 +1,30 @@
+# virtual environment
+.venv/
+venv/
+
+# python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# pytest
+.pytest_cache/
+
+# streamlit local config
+.streamlit/secrets.toml
+
+# vscode
+.vscode/
+
+# os files
+.DS_Store
+Thumbs.db
+
+# generated images / temp files
+*.png
+*.jpg
+*.jpeg
+
+# notebook checkpoints
+.ipynb_checkpoints/
