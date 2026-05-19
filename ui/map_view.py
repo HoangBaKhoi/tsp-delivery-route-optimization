@@ -47,6 +47,72 @@ def build_points_bounds(points: list) -> list[list[float]]:
     ]
 
 
+def build_segment_midpoint(start_coordinate: list[float], end_coordinate: list[float]) -> list[float]:
+    return [
+        (start_coordinate[0] + end_coordinate[0]) / 2,
+        (start_coordinate[1] + end_coordinate[1]) / 2,
+    ]
+
+
+def add_route_step_labels(folium_map: folium.Map, route_coordinates: list[list[float]]) -> None:
+    for step_index in range(len(route_coordinates) - 1):
+        midpoint = build_segment_midpoint(
+            route_coordinates[step_index],
+            route_coordinates[step_index + 1],
+        )
+
+        folium.Marker(
+            location=midpoint,
+            icon=folium.DivIcon(
+                html=f"""
+                <div style="
+                    background: #f97316;
+                    color: white;
+                    border: 2px solid white;
+                    border-radius: 6px;
+                    box-shadow: 0 1px 5px rgba(0,0,0,0.35);
+                    font-size: 12px;
+                    font-weight: 800;
+                    height: 24px;
+                    line-height: 20px;
+                    text-align: center;
+                    transform: translate(-12px, -12px);
+                    width: 24px;
+                ">{step_index + 1}</div>
+                """
+            ),
+        ).add_to(folium_map)
+
+
+def build_route_step_rows(points: list, route: list[int]) -> list[dict]:
+    rows = []
+
+    for step_index in range(len(route) - 1):
+        from_point = points[route[step_index]]
+        to_point = points[route[step_index + 1]]
+
+        rows.append(
+            {
+                "Bước": step_index + 1,
+                "Từ": f"{from_point.id} - {from_point.name}",
+                "Đến": f"{to_point.id} - {to_point.name}",
+            }
+        )
+
+    return rows
+
+
+def render_route_steps_panel(points: list, route_result) -> None:
+    st.subheader("Thứ tự đường đi")
+
+    if route_result is None or len(route_result.route) < 2:
+        st.info("Chưa có lộ trình. Bấm Solve để xem thứ tự đường đi.")
+        return
+
+    route_rows = build_route_step_rows(points, route_result.route)
+    st.dataframe(route_rows, use_container_width=True, hide_index=True, height=700)
+
+
 def handle_map_click(map_data: dict | None) -> None:
     """
     Xử lý sự kiện click trên bản đồ.
@@ -166,15 +232,22 @@ def render_map_view() -> None:
             opacity=0.9,  # độ trong suốt
             tooltip="Lộ trình tối ưu",  # tooltip của đường đi
         ).add_to(folium_map)  # thêm đường đi vào map
+        add_route_step_labels(folium_map, route_coordinates)
 
     if len(points) >= 2:
         folium_map.fit_bounds(build_points_bounds(points), padding=(30, 30))
 
-    # render map và lấy dữ liệu tương tác trả về
-    map_data = st_folium(
-        folium_map,
-        height=700,  # chiều cao khung bản đồ (cũ là 500)
-        width=None,  # để Streamlit tự co giãn theo layout
-    )
+    map_col, route_col = st.columns([2.2, 1])
+
+    with map_col:
+        # render map và lấy dữ liệu tương tác trả về
+        map_data = st_folium(
+            folium_map,
+            height=700,  # chiều cao khung bản đồ (cũ là 500)
+            width=None,  # để Streamlit tự co giãn theo layout
+        )
+
+    with route_col:
+        render_route_steps_panel(points, route_result)
 
     handle_map_click(map_data)  # xử lý nếu người dùng vừa click lên map

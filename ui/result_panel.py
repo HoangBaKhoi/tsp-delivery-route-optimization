@@ -35,8 +35,6 @@ def render_route_result() -> None:
     - route dạng tên điểm
     """
     result = st.session_state.route_result  # lấy kết quả route hiện tại
-    points = st.session_state.points  # lấy danh sách điểm để map index -> tên điểm
-
     if result is None:
         st.info("Chưa có kết quả. Hãy load dữ liệu mẫu và bấm Solve.")  # nếu chưa solve thì báo
         return
@@ -57,14 +55,7 @@ def render_route_result() -> None:
             round(result.elapsed_ms, 4),
         )  # hiển thị thời gian chạy
 
-    route_names = []  # danh sách tên điểm theo thứ tự route
-
-    for index in result.route:
-        point = points[index]  # lấy điểm theo index trong route
-        route_names.append(f"{point.id} - {point.name}")  # ghép chuỗi dễ đọc
-
-    st.write("Route index:", result.route)  # route dạng số index
-    st.write("Route tên điểm:", " → ".join(route_names))  # route dạng tên điểm
+    st.caption("Chi tiết thứ tự đường đi được hiển thị bên cạnh bản đồ.")
 
 #for app_v2.py
 def render_main_panels() -> None:
