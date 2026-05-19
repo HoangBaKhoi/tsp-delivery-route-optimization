@@ -37,6 +37,16 @@ def build_route_coordinates(points: list, route: list[int]) -> list[list[float]]
     return coordinates  # trả về danh sách tọa độ hoàn chỉnh
 
 
+def build_points_bounds(points: list) -> list[list[float]]:
+    lat_values = [point.lat for point in points]
+    lng_values = [point.lng for point in points]
+
+    return [
+        [min(lat_values), min(lng_values)],
+        [max(lat_values), max(lng_values)],
+    ]
+
+
 def handle_map_click(map_data: dict | None) -> None:
     """
     Xử lý sự kiện click trên bản đồ.
@@ -113,11 +123,37 @@ def render_map_view() -> None:
 
         tooltip_text = f"{point.id} - {point.name}"  # tooltip ngắn gọn
 
+        marker_color = "red" if point.id == 0 else "green"
+        marker_icon = "home" if point.id == 0 else "map-marker"
+
         folium.Marker(
             location=[point.lat, point.lng],  # vị trí marker
             popup=popup_text,  # popup chi tiết
             tooltip=tooltip_text,  # tooltip hiện khi rê chuột
+            icon=folium.Icon(color=marker_color, icon=marker_icon, prefix="fa"),
         ).add_to(folium_map)  # thêm marker vào map
+
+        folium.Marker(
+            location=[point.lat, point.lng],
+            icon=folium.DivIcon(
+                html=f"""
+                <div style="
+                    background: {'#dc2626' if point.id == 0 else '#16a34a'};
+                    color: white;
+                    border: 2px solid white;
+                    border-radius: 999px;
+                    box-shadow: 0 1px 4px rgba(0,0,0,0.35);
+                    font-size: 12px;
+                    font-weight: 700;
+                    height: 24px;
+                    line-height: 20px;
+                    text-align: center;
+                    transform: translate(-4px, -34px);
+                    width: 24px;
+                ">{point.id}</div>
+                """
+            ),
+        ).add_to(folium_map)
 
     # nếu đã có route thì vẽ polyline
     if route_result is not None and len(route_result.route) >= 2:
@@ -125,10 +161,14 @@ def render_map_view() -> None:
 
         folium.PolyLine(
             locations=route_coordinates,  # danh sách tọa độ theo thứ tự route
-            weight=4,  # độ dày đường
-            opacity=0.8,  # độ trong suốt
+            color="#f97316",
+            weight=6,  # độ dày đường
+            opacity=0.9,  # độ trong suốt
             tooltip="Lộ trình tối ưu",  # tooltip của đường đi
         ).add_to(folium_map)  # thêm đường đi vào map
+
+    if len(points) >= 2:
+        folium_map.fit_bounds(build_points_bounds(points), padding=(30, 30))
 
     # render map và lấy dữ liệu tương tác trả về
     map_data = st_folium(
