@@ -113,7 +113,7 @@ def render_route_steps_panel(points: list, route_result) -> None:
     st.dataframe(route_rows, use_container_width=True, hide_index=True, height=700)
 
 
-def handle_map_click(map_data: dict | None) -> None:
+def handle_map_click() -> None:
     """
     Xử lý sự kiện click trên bản đồ.
 
@@ -123,6 +123,8 @@ def handle_map_click(map_data: dict | None) -> None:
     - so sánh với click gần nhất để tránh thêm trùng khi Streamlit rerun
     - nếu là click mới thì thêm Point mới vào session state
     """
+    map_data = st.session_state.get("delivery_route_map")
+
     if not map_data:
         return  # nếu không có dữ liệu trả về thì bỏ qua
 
@@ -152,9 +154,8 @@ def handle_map_click(map_data: dict | None) -> None:
         lng=lng,  # kinh độ từ map
     )
 
-    st.rerun()  # rerun để marker mới hiện ngay trên bản đồ và bảng dữ liệu
 
-
+@st.fragment
 def render_map_view() -> None:
     """
     Hiển thị bản đồ, marker các điểm, route nếu đã có kết quả solve,
@@ -241,13 +242,14 @@ def render_map_view() -> None:
 
     with map_col:
         # render map và lấy dữ liệu tương tác trả về
-        map_data = st_folium(
+        st_folium(
             folium_map,
             height=700,  # chiều cao khung bản đồ (cũ là 500)
             width=None,  # để Streamlit tự co giãn theo layout
+            key="delivery_route_map",
+            returned_objects=["last_clicked"],
+            on_change=handle_map_click,
         )
 
     with route_col:
         render_route_steps_panel(points, route_result)
-
-    handle_map_click(map_data)  # xử lý nếu người dùng vừa click lên map
