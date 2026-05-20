@@ -148,3 +148,41 @@ def plot_distance_chart(summary: list[dict]):
 
     fig.tight_layout()
     return fig
+
+
+def plot_algorithm_runtime_bar_chart(summary: list[dict]):
+    """
+    Vẽ biểu đồ cột so sánh thời gian chạy giữa các thuật toán trên cùng một input.
+    """
+    rows = sorted(summary, key=lambda row: row["algorithm"])
+    algorithms = [row["algorithm"] for row in rows]
+    elapsed_values = [row["avg_elapsed_ms"] for row in rows]
+
+    fig, ax = plt.subplots(figsize=(8, 5))
+    ax.bar(algorithms, elapsed_values, color="#2563eb")
+    ax.set_title("So sánh runtime trên dữ liệu hiện tại")
+    ax.set_xlabel("Thuật toán")
+    ax.set_ylabel("Thời gian chạy trung bình (ms)")
+    ax.grid(axis="y", alpha=0.3)
+
+    fig.tight_layout()
+    return fig
+
+
+def plot_algorithm_distance_bar_chart(summary: list[dict]):
+    """
+    Vẽ biểu đồ cột so sánh tổng quãng đường giữa các thuật toán trên cùng một input.
+    """
+    rows = sorted(summary, key=lambda row: row["algorithm"])
+    algorithms = [row["algorithm"] for row in rows]
+    distance_values = [row["avg_distance"] for row in rows]
+
+    fig, ax = plt.subplots(figsize=(8, 5))
+    ax.bar(algorithms, distance_values, color="#f97316")
+    ax.set_title("So sánh quãng đường trên dữ liệu hiện tại")
+    ax.set_xlabel("Thuật toán")
+    ax.set_ylabel("Tổng quãng đường trung bình (km)")
+    ax.grid(axis="y", alpha=0.3)
+
+    fig.tight_layout()
+    return fig

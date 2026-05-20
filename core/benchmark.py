@@ -117,6 +117,43 @@ def run_benchmark(
     return benchmark_results  # trả về toàn bộ kết quả benchmark
 
 
+def run_benchmark_on_points(
+    points: list[Point],
+    algorithms: list[str],
+    repeats: int = 3,
+) -> list[BenchmarkResult]:
+    """
+    Chạy benchmark trực tiếp trên bộ điểm hiện tại của người dùng.
+
+    Hàm này không sinh dữ liệu ngẫu nhiên. Nó dùng đúng danh sách points đang có
+    trên giao diện để so sánh các thuật toán trên cùng một input.
+    """
+    benchmark_results = []
+    n_points = len(points)
+
+    for _ in range(repeats):
+        for algorithm in algorithms:
+            try:
+                result = run_solver(
+                    points=points,
+                    algorithm_name=algorithm,
+                )
+
+                benchmark_results.append(
+                    BenchmarkResult(
+                        algorithm=algorithm,
+                        n_points=n_points,
+                        distance=result.total_distance_km,
+                        elapsed_ms=result.elapsed_ms,
+                    )
+                )
+
+            except ValueError:
+                continue
+
+    return benchmark_results
+
+
 def summarize_benchmark_results(
     results: list[BenchmarkResult],
 ) -> list[dict]:
